@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Karma High</title>
+<link rel="stylesheet" type="text/css" media="all" href="css/style.css" /> 
+</head>
+<body>
+
+<!--wrapper-->
+<div id="wrapper">
+<section id="content">
+
+<div align="center">
+<img src="images/header.png">
+</div>
+
+<img src="data/textures/splash.png" style="position:absolute; z-index:99" id="splash">
+<div id="karmahigh"></div>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
+<script type="text/javascript" src="js/vector.js"></script>
+<script type="text/javascript" src="js/runner.js"></script>
+<script type="text/javascript" src="js/assetmanager.js"></script>
+<script type="text/javascript" src="js/keyboard.js"></script>
+<script type="text/javascript" src="js/screengame.js"></script>
+<script type="text/javascript" src="js/screenmanager.js"></script>
+<script type="text/javascript" src="js/layer.js"></script>
+<script type="text/javascript" src="js/student.js"></script>
+<script type="text/javascript" src="js/ai.js"></script>
+<script type="text/javascript" src="js/collider.js"></script>
+<script type="text/javascript" src="js/camera.js"></script>
+<script type="text/javascript" src="js/karmahigh.js"></script>
+<script type="text/javascript">
+start_karmahigh();
+// Position the splash screen on top of the game.
+$('#splash').css('top', $('#karmahigh').offset().top);
+$('#splash').css('left', $('#karmahigh').offset().left);
+</script>
+
+<br><br>
+Welcome to Karma High School!  Fight your way through the crowded hallways to get to class before passing period ends.<br><br>
+
+</section>
+</div>
+
+</body>
+</html>

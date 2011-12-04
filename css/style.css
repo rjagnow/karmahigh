@@ -1,0 +1,79 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/*---------------- reset ----------------*/
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+
+/*----------------- layout ------------------*/
+body	{font-family: Arial, Helvetica, sans-serif; font-size: 100%; background-color: #808080; height: 100%}
+html    {height: 100%}
+
+/*----------------- typography ------------------*/
+p 		{font-size: 100%; line-height: 100%; color: #333;}
+h1 		{display: none;}
+h2 		{font-size: 200%; font-weight: bold; color: #cc3300;}
+
+#wrapper {margin: 0 auto; width: 100%; height: 100%; background: url('../images/background.jpg'); background-position:center top; -ms-overflow-x: hidden; overflow-x: hidden;}
+#karmahigh {margin: 0 auto; width: 100%; text-align:center}
+
+
+/*----- content ------*/
+section#content 	{margin: 10px auto; width: 900px;}
+
+/*----- header ------*/
+#branding {padding: 0 10px 0 10px; margin: 0 auto; width: 900px; height: 105px; clear: both; }
+
+#logo 	  {margin: 20px 0 0 0; position: relative; float: left; width: 153px; height: 105px; }
+
+/*----- footer ------*/
+
+footer#footer-wrapper 			{margin: 10px auto; padding: 0 10px 0 10px; width: 940px; height: 44px; background: #993300;}
+footer#footer-wrapper p 		{margin: 15px 0 0 10px; float: left; font-size: 115%; color: #FFF; }
