@@ -25,7 +25,12 @@ window.start_karmahigh = function() {
     var keyboard = new KeyHandler();
     $(window).on('keydown', keyboard.keyDown);
     $(window).on('keyup', keyboard.keyUp);
-    var screenManager = new ScreenManager(new ScreenGame(0));
+    var screenManager = new ScreenManager(new ScreenMain());
+    
+    var gameState = {levels: []};
+    for(var i = 0; i < 3; i++) {
+        gameState.levels.push({asset_name: null, attacked: false});
+    }
     
     var runner = new Runner(32);
     var splash_done = false;
@@ -42,7 +47,7 @@ window.start_karmahigh = function() {
         
         if (splash_done)
         {
-            screenManager.get_current().update(screenManager, keyboard, this, camera);
+            screenManager.get_current().update(screenManager, keyboard, this, camera, gameState);
             screenManager.get_current().draw(layers, this, camera);
             screenManager.update(this);
         }

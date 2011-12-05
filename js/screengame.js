@@ -4,46 +4,78 @@
 var levels = [
 // 1
 {layout:"" +
-"   C         A     C     B     A       A         B  B       X   \n" +
-"       A  A           B         A            B     A            \n" +
-"   B      B   C   A       A   B      C    A  A       A    C     \n" +
-" A      B    A   A     AC     A            B  A    A    A    B  \n" +
-"     C        A            C        A  C       C       B        \n" +
-"            A         C       A                    A   B     A  \n" +
-"   C       A       A                 B       A      C           \n" +
-"      A        B        A  C    B        C     A          A     \n",
- background:'background01'
- },
- // 2
-{layout:"" +
 "                          A                       B         X   \n" +
 "       A                                                        \n" +
 "                              B                                 \n" +
-"                                         B                 C    \n" +
+"                                         B                 A    \n" +
 "    B                                                           \n" +
-"                        C                                       \n" +
+"                        A                                       \n" +
 "                                          B                     \n" +
 "                   A                                            \n",
- background:'background01'
- }
+ background:'background01' },
+ // 2
+ {layout:"" +
+"                          A                       B         X   \n" +
+"       A                                                        \n" +
+"                              B                                 \n" +
+"                                         B                 A    \n" +
+"    B                                                           \n" +
+"                        A                                       \n" +
+"                                          B                     \n" +
+"                   A                                            \n",
+ background:'background01' },
+ // 3
+ {layout:"" +
+"   B         A     C     B     A       A         B  B       X   \n" +
+"       A  A           B         A            B     A            \n" +
+"   B      B   B   A       A   B      C    A  A       A    C     \n" +
+" A      B    A   A     A A    A            B  A    A    A    B  \n" +
+"     A        A            B        A  A       C       B        \n" +
+"            A         A       A                    A   B     A  \n" +
+"   A       A       A                 B       A      B           \n" +
+"      A        B        A  C    B        B     A          A     \n",
+ background:'background01' }
  ]
 
 
-function ScreenGame(levelidx) {
+function ScreenGame(levelidx, gameState) {
     this.next_screen = null;
     this.exitpos = null;
     
     this.characters = [];
-    this.characters.push(new Student()); // player
+    var player = new Student(0);
+    player.asset_name = 'char0' + (levelidx + 1) + 'c';
+    if(levelidx == 2)  player.can_punch = false;
+    gameState.levels[levelidx].asset_name = player.asset_name;
+    this.characters.push(player);
         
     this.levelidx = levelidx;
     this.level = levels[levelidx];
+    this.asset_prefixes = ['char01', 'char02', 'char03'];
     this.asset_suffixes = ['a', 'b', 'c'];
-    this.parseLevel(this.level.layout);
+    this.parseLevel(this.level.layout, gameState);
     this.collider = new Collider();
+    
+    // start fade from black to game on construction
+    this.fade(0.0, 1000, null);
 }
 
-ScreenGame.prototype.update = function(screenManager, keyboard, run, camera) {
+ScreenGame.prototype.positionCamera = function(player, camera) {
+    // the camera should be a bit back of the player generally, but clamped to the background
+    var cameraPos = new Vector2D(player.pos.x - 160, 0);
+    if (cameraPos.x < 0)
+        cameraPos.x = 0;
+    if (cameraPos.x > gameWidth-640)
+        cameraPos.x = gameWidth-640;
+    camera.set_pos(cameraPos);
+}
+
+ScreenGame.prototype.update = function(screenManager, keyboard, run, camera, gameState) {
+    if(this.fade_progress > 0) {
+        this.positionCamera(this.characters[0], camera);
+        return;
+    }
+
     // Update the NPCs.
     this.collider.set_colliders(this.characters);
     for (var i=1; i<this.characters.length; i++) {
@@ -51,23 +83,34 @@ ScreenGame.prototype.update = function(screenManager, keyboard, run, camera) {
     }
     // Update the player.
     var player = this.characters[0];
-    player.updatePlayer(keyboard, run, camera, this.collider)
-    
-    // Our first student is the player.  Update the camera based on his position.
-    var cameraPos = new Vector2D(player.pos.x - 160, 0);
-    if (cameraPos.x < 0)
-        cameraPos.x = 0;
-    if (cameraPos.x > gameWidth-640)
-        cameraPos.x = gameWidth-640;
-    camera.set_pos(cameraPos);
+    player.updatePlayer(keyboard, run, camera, this.collider);
+    if(player.punched_a_guy) {
+        gameState.levels[this.levelidx].attacked = true;
+    }
+    this.positionCamera(player, camera);
     
     // detect whether the player is at the exit
     if(this.exitpos && 
        player.pos.x >= this.exitpos.x - 20 && player.pos.x <= this.exitpos.x + 20 &&
        player.pos.y >= this.exitpos.y - 20 && player.pos.y <= this.exitpos.y + 20) {
-        this.next_screen = new ScreenGame(this.levelidx+1); // just restart this level for now
+        this.fade(1.0, 1000, function() {
+            this.next_screen = new ScreenSelect(this.levelidx+1);
+        });
+    } else {
+        // detect player beat down
+        if(player.dead_time > 300) {
+            this.fade(1.0, 1000, function() {
+                this.next_screen = new ScreenGame(this.levelidx, gameState); // failure == restarting level for now
+            });
+        }
     }
+};
 
+ScreenGame.prototype.fade = function(goal, time, cb) {
+    // set up state to fade to/from black, with optional callback after it's done
+    this.fade_goal = goal;
+    this.fade_progress = this.fade_total = time;
+    this.fade_callback = cb
 };
 
 ScreenGame.prototype.draw = function(layers, run, camera) {
@@ -78,7 +121,7 @@ ScreenGame.prototype.draw = function(layers, run, camera) {
     ctx.drawImage(asset_manager.assets[this.level.background], -camera.x(), camera.y());
     
     ctx = layers.player.ctx;
-    ctx.clearRect(0,0,640,480);
+    ctx.clearRect(0,0,viewWidth,viewHeight);
     
     var back2front = this.characters.slice(0,this.characters.length);
     back2front.sort(function(a,b) { return a.pos.y - b.pos.y; });
@@ -86,11 +129,48 @@ ScreenGame.prototype.draw = function(layers, run, camera) {
     for (var i = 0; i < back2front.length; i++) {
         back2front[i].draw(layers, run, camera);
     }
+    
+    if(this.fade_progress > 0) {
+        ctx = layers.hud.ctx;
+        var opacity = 0;
+        if(this.fade_goal === 0.0) {
+            opacity = (1.01 * this.fade_progress)/this.fade_total;
+        }
+        if(this.fade_goal === 1.0) {
+            opacity = 1 - (1.01 * this.fade_progress)/this.fade_total;
+        }
+        ctx.clearRect(0,0,viewWidth, viewHeight);
+        ctx.fillStyle = 'rgba(0,0,0,' + opacity + ')';
+        ctx.fillRect(0,0,viewWidth,viewHeight);
+        
+        this.fade_progress -= run.dt;
+        if(this.fade_progress < 0) 
+        {
+            this.fade_progress = 0;
+            if(this.fade_callback) {
+                this.fade_callback();
+                this.fade_callback = null;
+            }
+        }
+    }
 };
 
-ScreenGame.prototype.parseLevel = function(levelStr) {
+function asset_is_player_asset(asset_name, gameState) {
+    for(var i = 0; i < gameState.levels.length; i++) {
+        if(gameState.levels[i].asset_name === asset_name)
+            return true;
+    }
+    return false;
+}
+
+ScreenGame.prototype.parseLevel = function(levelStr, gameState) {
     var player = this.characters[0];
     var lines = levelStr.split("\n");
+    var have_attackers = false;
+    for(var i = 0; i < gameState.levels.length; i++) {
+        if(gameState.levels[i].attacked)
+            have_attackers = true;
+    }
     var n = 0;
     for(var j = 0; j < lines.length; j++) {
         var line = lines[j];
@@ -102,19 +182,31 @@ ScreenGame.prototype.parseLevel = function(levelStr) {
                     this.exitpos = pos;
                     continue;
                 }
-                var npc = new Student();
-                do {                
-                    n += 1;
-                    npc.asset_name = 'char01' + this.asset_suffixes[n % this.asset_suffixes.length];
-                } while(npc.asset_name == player.asset_name);
+                
+                do {
+                    var x = parseInt(Math.random() * this.asset_prefixes.length);
+                    var y = parseInt(Math.random() * this.asset_suffixes.length);
+                    var asset_name = this.asset_prefixes[x] + this.asset_suffixes[y];
+                } while(asset_is_player_asset(asset_name, gameState));
+                var npc = new Student(n);
+                npc.asset_name = asset_name;
                 npc.pos = pos;
-                npc.seed = n;
                 if(chr === 'A')
                     npc.ai = pace_horiz;
                 if(chr === 'B')
                     npc.ai = pace_vert;
-                if(chr === 'C')
-                    npc.speed = 0;
+                if(chr === 'C') {
+                    // attackers use previous player char avatars
+                    do {
+                        var pidx = parseInt(Math.random() * (gameState.levels.length));
+                    } while(pidx == this.levelidx);
+                    npc.asset_name = gameState.levels[pidx].asset_name;
+                    if(have_attackers) {
+                        npc.ai = attack_player;
+                    } else {
+                        npc.ai = pace_horiz;
+                    }
+                }
                 this.characters.push(npc);
             }
         }

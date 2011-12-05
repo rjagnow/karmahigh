@@ -31,9 +31,12 @@ function AssetManager() {
     // modified assets with modified palettes.
     self.shift_palettes = function() {
         // [skin, hair, shirt, shart_shadow, backpack, backpack_shadow]
-        self.copy_with_palette_shift("char01", "char01a", [0xdea582, 0xaa795b, 0x784900, 0x1a1815, 0x528bff, 0x36af44, 0x3759a0 ,0x23802e]);
-        self.copy_with_palette_shift("char01", "char01b", [0xdea582, 0xdea582, 0x784900, 0x784900, 0x528bff, 0xcb6a65, 0x3759a0 ,0xa34e4a, 0xc16b46, 0x75926e, 0x873a29, 0x5b7754]);
-        self.copy_with_palette_shift("char01", "char01c", [0xdea582, 0xdea582, 0x784900, 0xf0d35e, 0x528bff, 0x3966c2, 0x3759a0 ,0x254b99]);
+        var chars = ['char01', 'char02', 'char03'];
+        for(var i = 0; i < chars.length; i++) {
+            self.copy_with_palette_shift(chars[i], chars[i] + "a", [0xdea582, 0xaa795b, 0x784900, 0x1a1815, 0x528bff, 0x36af44, 0x3759a0 ,0x23802e]);
+            self.copy_with_palette_shift(chars[i], chars[i] + "b", [0xdea582, 0xdea582, 0x784900, 0x784900, 0x528bff, 0xcb6a65, 0x3759a0 ,0xa34e4a, 0xc16b46, 0x75926e, 0x873a29, 0x5b7754]);
+            self.copy_with_palette_shift(chars[i], chars[i] +   "c", [0xdea582, 0xdea582, 0x784900, 0xf0d35e, 0x528bff, 0x3966c2, 0x3759a0 ,0x254b99]);
+        }
     }
     
     self.copy_with_palette_shift = function(name, new_name, swap_list) {
@@ -42,7 +45,7 @@ function AssetManager() {
         var new_canvas = $('<canvas>').attr({width : width, height : height});
         var ctx = new_canvas.get(0).getContext('2d');
         ctx.clearRect(0,0,width, height);
-        ctx.drawImage(self.assets['char01'], 0, 0);
+        ctx.drawImage(self.assets[name], 0, 0);
         
         // Access the image data directly.
         var img_data = ctx.getImageData(0, 0, width, height);
@@ -66,6 +69,14 @@ function AssetManager() {
     
     self.load_asset("background01", "data/textures/background01.png");
     self.load_asset("char01", "data/textures/char01.png");
+    self.load_asset("char02", "data/textures/char02.png");
+    self.load_asset("char03", "data/textures/char03.png");
+    self.load_asset("screen_select_punch", "data/textures/screen_select_punch.jpg");
+    self.load_asset("screen_select_shout", "data/textures/screen_select_shout.jpg");
+    self.load_asset("screen_select", "data/textures/screen_select.jpg");
+    self.load_asset("screen_menu", "data/textures/screen_menu.png");
+    self.load_asset("screen_win", "data/textures/screen_win.jpg");
+    self.load_asset("arrow_horiz", "data/textures/arrow_horiz.png");
 }
 
 //------------------------------------------------------------------------------
