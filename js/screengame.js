@@ -4,33 +4,33 @@
 var levels = [
 // 1
 {layout:"" +
-"                          A                       B         X   \n" +
-"       A                                                        \n" +
-"                              B                                 \n" +
-"                                         B                 A    \n" +
-"    B                                                           \n" +
-"                        A                                       \n" +
-"                                          B                     \n" +
-"                   A                                            \n",
+"A                A       A  A      B   A      A    B        X B \n" +
+"B       A        B      A    A  A          A       A           \n" +
+"            A     A      A    B       A    A   B                \n" +
+"          A             A    A     A     B          B      A    \n" +
+"    A         B     B    A            A         A              B \n" +
+"       A      A         A    A                     B       A   \n" +
+"             B        A      A            B         B           \n" +
+" A     B           A    B      BA     A           A         A   \n",
  background:'background01' },
  // 2
  {layout:"" +
-"                          A                       B         X   \n" +
-"       A                                                        \n" +
-"                              B                                 \n" +
-"                                         B                 A    \n" +
-"    B                                                           \n" +
-"                        A                                       \n" +
-"                                          B                     \n" +
-"                   A                                            \n",
+" B          B    A      A        A      A  B   A    B    A X   A\n" +
+"        A         A      BA      A               A         A    \n" +
+"A        A   B   A B   A       A B    A      A     A         A  \n" +
+" A   A                 A     A      A    B   A       A     A   A\n" +
+"   A B       B  A   A           A                 A      A   A  \n" +
+"       A          B     A        A         A    B     AB BB     \n" +
+"    A      A B    A    A      B  A        B    A            A   \n" +
+"      A  B     A   A           A    B        A        A      A  \n",
  background:'background01' },
  // 3
  {layout:"" +
 "   B         A     C     B     A       A         B  B       X   \n" +
-"       A  A           B         A            B     A            \n" +
+"       A  A           B         A            B     A         C  \n" +
 "   B      B   B   A       A   B      C    A  A       A    C     \n" +
 " A      B    A   A     A A    A            B  A    A    A    B  \n" +
-"     A        A            B        A  A       C       B        \n" +
+"     A  A      A            B        A  A       C       B        \n" +
 "            A         A       A                    A   B     A  \n" +
 "   A       A       A                 B       A      B           \n" +
 "      A        B        A  C    B        B     A          A     \n",
@@ -41,6 +41,7 @@ var levels = [
 function ScreenGame(levelidx, gameState) {
     this.next_screen = null;
     this.exitpos = null;
+    this.remaining_time = 30000; // 30 seconds to level end
     
     this.characters = [];
     var player = new Student(0);
@@ -74,6 +75,14 @@ ScreenGame.prototype.update = function(screenManager, keyboard, run, camera, gam
     if(this.fade_progress > 0) {
         this.positionCamera(this.characters[0], camera);
         return;
+    }
+    
+    // check time limit
+    this.remaining_time -= run.dt;
+    if(this.remaining_time < 0) {
+        this.fade(1.0, 1000, function() {
+            this.next_screen = new ScreenGame(this.levelidx, gameState); // another failure case
+        });
     }
 
     // Update the NPCs.
@@ -130,8 +139,8 @@ ScreenGame.prototype.draw = function(layers, run, camera) {
         back2front[i].draw(layers, run, camera);
     }
     
+    ctx = layers.hud.ctx;
     if(this.fade_progress > 0) {
-        ctx = layers.hud.ctx;
         var opacity = 0;
         if(this.fade_goal === 0.0) {
             opacity = (1.01 * this.fade_progress)/this.fade_total;
@@ -152,6 +161,17 @@ ScreenGame.prototype.draw = function(layers, run, camera) {
                 this.fade_callback = null;
             }
         }
+    } else {
+        // draw HUD
+        var txt = "" + Math.round(this.remaining_time/1000);
+        ctx.clearRect(0,0, viewWidth, viewHeight);
+        ctx.font = 'bold 30px monospace';
+        var txtwidth = ctx.measureText(txt).width;
+        var timepos = new V2((viewWidth - txtwidth)/2, 40);
+        ctx.fillStyle = 'rgba(0,0,0,1)';
+        ctx.fillText(txt, timepos.x + 2, timepos.y + 2);
+        ctx.fillStyle = 'rgba(255,255,255,1)';
+        ctx.fillText(txt, timepos.x, timepos.y);
     }
 };
 
